@@ -2127,33 +2127,26 @@ Object.assign(window, {
             color: var(--theme-accent);
         }
 
-        /* Mobile-only nav-bar compaction: icon/short-label spans swap in under
-           900px, desktop keeps the original full-text buttons untouched. */
-        .nav-compact { display: none; }
+        /* Nav-bar icon buttons: compact icon spans replace the old full-text labels. */
+        .nav-full { display: none; }
+        .nav-compact { display: inline-flex; align-items: center; }
+        .nav-btn { padding: 0.6rem 0.85rem; }
         .nav-btn-home-icon { width: 16px; height: 16px; }
-        @media (max-width: 900px) {
-            .nav-full { display: none; }
-            .nav-compact { display: inline-flex; align-items: center; }
-            .nav-btn { padding: 0.6rem 0.85rem; }
-        }
 
         /* Inline "add to plan" +/✓ button next to the temple title on mobile,
            replacing the nav-bar pill (which stays as-is on desktop). */
         .ta-title-row { display: flex; align-items: flex-start; gap: 0.6rem; }
-        .plan-add-inline { display: none; }
-        @media (max-width: 900px) {
-            #plan-toggle-btn { display: none; }
-            .plan-add-inline {
-                display: flex; align-items: center; justify-content: center;
-                width: 34px; height: 34px; min-width: 34px; margin-top: 0.6rem;
-                border-radius: 50%; border: 1px solid var(--theme-accent);
-                background: transparent; color: var(--theme-accent);
-                font-size: 18px; font-weight: 600; cursor: pointer; line-height: 1;
-                transition: background 0.2s ease, color 0.2s ease;
-            }
-            .plan-add-inline.active {
-                background: var(--theme-accent); color: #fff;
-            }
+        #plan-toggle-btn { display: none; }
+        .plan-add-inline {
+            display: flex; align-items: center; justify-content: center;
+            width: 34px; height: 34px; min-width: 34px; margin-top: 0.6rem;
+            border-radius: 50%; border: 1px solid var(--theme-accent);
+            background: transparent; color: var(--theme-accent);
+            font-size: 18px; font-weight: 600; cursor: pointer; line-height: 1;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        .plan-add-inline.active {
+            background: var(--theme-accent); color: #fff;
         }
 
         /* Category view header */
@@ -2675,10 +2668,7 @@ Object.assign(window, {
            each state purely to enlarge the tap target (small states are far under
            the ~44px touch minimum on a 390px screen). The visible .im-state border
            above is untouched. */
-        .im-state-hit { fill: transparent; stroke: transparent; pointer-events: none; }
-        @media (max-width: 900px) {
-            .im-state-hit { stroke-width: 16px; vector-effect: non-scaling-stroke; pointer-events: all; }
-        }
+        .im-state-hit { fill: transparent; stroke: transparent; stroke-width: 16px; vector-effect: non-scaling-stroke; pointer-events: all; }
         .im-state-g.active .im-state { cursor:pointer; }
         .im-state-g:hover .im-state { fill:rgba(193,122,74,0.28); stroke:var(--theme-accent); stroke-width:1.2; }
         .im-state-label-live { font-family:'Inter',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.3px; fill:var(--theme-accent); text-anchor:middle; pointer-events:none; transition:opacity 0.15s ease; paint-order:stroke; stroke:#fff; stroke-width:3px; stroke-linejoin:round; }
@@ -2731,19 +2721,22 @@ Object.assign(window, {
            pill (which otherwise permanently cover a chunk of the right edge on a
            390px-wide screen) with a single toggle. Desktop is untouched: .social-float
            and .plan-mini keep their original always-visible behavior above 900px. */
-        .mobile-fab, .mobile-fab-backdrop { display: none; }
-        @media (max-width: 900px) {
-            .social-float, .plan-mini { display: none !important; }
-            .mobile-fab { display: flex; }
-        }
+        .social-float, .plan-mini { display: none !important; }
+        .mobile-fab { display: flex; }
         .mobile-fab-backdrop {
+            display: none;
             position: fixed; inset: 0; z-index: 240; background: transparent;
         }
         .mobile-fab-backdrop.open { display: block; }
         .mobile-fab {
             position: fixed; right: 1.1rem; bottom: 1.1rem; z-index: 250;
             flex-direction: column; align-items: flex-end; gap: 0.65rem;
+            /* The container's own box stays tall enough to fit the (collapsed)
+               menu above the toggle, even while invisible — without this, that
+               blank space silently absorbed clicks meant for cards underneath. */
+            pointer-events: none;
         }
+        .mobile-fab-toggle { pointer-events: auto; }
         .mobile-fab-menu {
             display: flex; flex-direction: column; align-items: flex-end; gap: 0.55rem;
             opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.96);
