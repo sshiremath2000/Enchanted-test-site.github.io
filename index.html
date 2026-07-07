@@ -2127,6 +2127,35 @@ Object.assign(window, {
             color: var(--theme-accent);
         }
 
+        /* Mobile-only nav-bar compaction: icon/short-label spans swap in under
+           900px, desktop keeps the original full-text buttons untouched. */
+        .nav-compact { display: none; }
+        .nav-btn-home-icon { width: 16px; height: 16px; }
+        @media (max-width: 900px) {
+            .nav-full { display: none; }
+            .nav-compact { display: inline-flex; align-items: center; }
+            .nav-btn { padding: 0.6rem 0.85rem; }
+        }
+
+        /* Inline "add to plan" +/✓ button next to the temple title on mobile,
+           replacing the nav-bar pill (which stays as-is on desktop). */
+        .ta-title-row { display: flex; align-items: flex-start; gap: 0.6rem; }
+        .plan-add-inline { display: none; }
+        @media (max-width: 900px) {
+            #plan-toggle-btn { display: none; }
+            .plan-add-inline {
+                display: flex; align-items: center; justify-content: center;
+                width: 34px; height: 34px; min-width: 34px; margin-top: 0.6rem;
+                border-radius: 50%; border: 1px solid var(--theme-accent);
+                background: transparent; color: var(--theme-accent);
+                font-size: 18px; font-weight: 600; cursor: pointer; line-height: 1;
+                transition: background 0.2s ease, color 0.2s ease;
+            }
+            .plan-add-inline.active {
+                background: var(--theme-accent); color: #fff;
+            }
+        }
+
         /* Category view header */
         .cat-header {
             text-align: center;
@@ -2642,6 +2671,14 @@ Object.assign(window, {
         .im-svg { position:absolute; inset:0; width:100%; height:100%; padding:7.5%; box-sizing:border-box; }
         .im-outline { fill:#ece3d2; stroke:#c9b894; stroke-width:0.6; }
         .im-state { fill:#ece3d2; stroke:#c9b894; stroke-width:0.5; cursor:default; transition:fill 0.2s ease, stroke 0.2s ease; }
+        /* Mobile only: an invisible, generously-stroked duplicate path layered over
+           each state purely to enlarge the tap target (small states are far under
+           the ~44px touch minimum on a 390px screen). The visible .im-state border
+           above is untouched. */
+        .im-state-hit { fill: transparent; stroke: transparent; pointer-events: none; }
+        @media (max-width: 900px) {
+            .im-state-hit { stroke-width: 16px; vector-effect: non-scaling-stroke; pointer-events: all; }
+        }
         .im-state-g.active .im-state { cursor:pointer; }
         .im-state-g:hover .im-state { fill:rgba(193,122,74,0.28); stroke:var(--theme-accent); stroke-width:1.2; }
         .im-state-label-live { font-family:'Inter',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.3px; fill:var(--theme-accent); text-anchor:middle; pointer-events:none; transition:opacity 0.15s ease; paint-order:stroke; stroke:#fff; stroke-width:3px; stroke-linejoin:round; }
@@ -2649,7 +2686,14 @@ Object.assign(window, {
         .im-frame.zooming .im-state-g:not(.selected) { opacity:0; transition:opacity 0.4s ease; }
         .im-browse-link { display:block; text-align:center; margin-top:1rem; font-size:12.5px; color:var(--theme-accent); cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
         .im-page-layout { display:grid; grid-template-columns:260px 1fr; gap:28px; align-items:start; margin-top:1.5rem; }
-        @media(max-width:960px){ .im-page-layout{ grid-template-columns:1fr; } }
+        @media(max-width:960px){
+            .im-page-layout{ grid-template-columns:1fr; }
+            /* The sidebar's position:sticky (from .ta-sidebar, meant to pin it
+               beside the map in the 2-column desktop layout) has nothing to sit
+               beside once the grid stacks to one column — it was floating over
+               the map as the page scrolled. Let it scroll normally when stacked. */
+            .im-page-layout .ta-sidebar { position:static; top:auto; }
+        }
         .im-map-col { display:flex; flex-direction:column; }
         .ta-empty { text-align:center; padding:60px 20px; color:var(--theme-muted); grid-column:1/-1; }
         .ta-empty .ta-empty-icon { font-size:2.5rem; opacity:.5; margin-bottom:10px; }
@@ -2682,6 +2726,72 @@ Object.assign(window, {
         .sb-whatsapp  { background: #25D366; }
         .sb-instagram { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
         .sb-facebook  { background: #1877F2; }
+
+        /* Mobile-only collapsible FAB — replaces the stacked social icons + My Plan
+           pill (which otherwise permanently cover a chunk of the right edge on a
+           390px-wide screen) with a single toggle. Desktop is untouched: .social-float
+           and .plan-mini keep their original always-visible behavior above 900px. */
+        .mobile-fab, .mobile-fab-backdrop { display: none; }
+        @media (max-width: 900px) {
+            .social-float, .plan-mini { display: none !important; }
+            .mobile-fab { display: flex; }
+        }
+        .mobile-fab-backdrop {
+            position: fixed; inset: 0; z-index: 240; background: transparent;
+        }
+        .mobile-fab-backdrop.open { display: block; }
+        .mobile-fab {
+            position: fixed; right: 1.1rem; bottom: 1.1rem; z-index: 250;
+            flex-direction: column; align-items: flex-end; gap: 0.65rem;
+        }
+        .mobile-fab-menu {
+            display: flex; flex-direction: column; align-items: flex-end; gap: 0.55rem;
+            opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.96);
+            transform-origin: bottom right; transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .mobile-fab.open .mobile-fab-menu { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+        .mobile-fab-item {
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+            background: var(--theme-surface); border: 1px solid var(--theme-border);
+            border-radius: 50%; width: 46px; height: 46px; padding: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.16);
+            text-decoration: none; color: var(--theme-ink);
+        }
+        .mobile-fab-item-icon {
+            width: 100%; height: 100%; border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .mobile-fab-item-icon svg { width: 20px; height: 20px; }
+        .mfi-plan       { background: #2b4a3f; font-size: 18px; }
+        .mfi-phone      { background: #4d7280; }
+        .mfi-whatsapp   { background: #25D366; }
+        .mfi-instagram  { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
+        .mfi-facebook   { background: #1877F2; }
+        .mobile-fab-item-count {
+            position: absolute; top: -4px; right: -4px; min-width: 17px; height: 17px;
+            padding: 0 3px; border-radius: 9px; background: #c0433a; color: #fff;
+            font-size: 10px; font-weight: 700; display: flex; align-items: center;
+            justify-content: center; box-shadow: 0 0 0 2px var(--theme-surface, #fff);
+        }
+        .mobile-fab-toggle {
+            width: 58px; height: 58px; border-radius: 50%; border: none;
+            background: var(--theme-accent); color: #fff; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.28); position: relative;
+        }
+        .mobile-fab-toggle-icon {
+            font-size: 30px; font-weight: 300; line-height: 1; display: inline-block;
+            transition: transform 0.25s ease;
+        }
+        .mobile-fab.open .mobile-fab-toggle-icon { transform: rotate(45deg); }
+        .mobile-fab-badge {
+            position: absolute; top: -3px; right: -3px; min-width: 19px; height: 19px;
+            padding: 0 4px; border-radius: 10px; background: #c0433a; color: #fff;
+            font-size: 11px; font-weight: 700; display: none; align-items: center;
+            justify-content: center; box-shadow: 0 0 0 2px var(--theme-surface, #fff);
+        }
+        .mobile-fab-badge.visible { display: flex; }
 
         /* Toolbox panel */
         .toolbox-panel {
@@ -3212,7 +3322,7 @@ Object.assign(window, {
         handleTogglePlan(name, city, state);
         const added = isInPlan(name);
         btn.classList.toggle('active', added);
-        btn.textContent = added ? '✓' : '+';
+        btn.textContent = added ? '−' : '+';
         btn.title = added ? 'Remove from My Plan' : 'Add to My Plan';
     }
 
@@ -3222,20 +3332,27 @@ Object.assign(window, {
         else myPlan.push({ name, city, state });
         renderPlanPanel();
         const btn = document.getElementById('plan-toggle-btn');
+        const added = isInPlan(name);
         if (btn) {
-            const added = isInPlan(name);
             btn.classList.toggle('active', added);
-            btn.innerHTML = added ? '✓ Added to My Plan' : '+ Add to My Plan';
+            btn.innerHTML = added ? '− Added to My Plan' : '+ Add to My Plan';
+        }
+        const inlineBtn = document.getElementById('plan-toggle-inline');
+        if (inlineBtn) {
+            inlineBtn.classList.toggle('active', added);
+            inlineBtn.textContent = added ? '−' : '+';
+            inlineBtn.setAttribute('aria-label', added ? 'Remove from My Plan' : 'Add to My Plan');
         }
     }
 
     function removeFromPlan(name) {
         myPlan = myPlan.filter(p => p.name !== name);
         renderPlanPanel();
-        const btn = document.getElementById('plan-toggle-btn');
-        if (btn && nav.view === 'temple-detail' && nav.placeId === name) {
-            btn.classList.remove('active');
-            btn.innerHTML = '+ Add to My Plan';
+        if (nav.view === 'temple-detail' && nav.placeId === name) {
+            const btn = document.getElementById('plan-toggle-btn');
+            if (btn) { btn.classList.remove('active'); btn.innerHTML = '+ Add to My Plan'; }
+            const inlineBtn = document.getElementById('plan-toggle-inline');
+            if (inlineBtn) { inlineBtn.classList.remove('active'); inlineBtn.textContent = '+'; inlineBtn.setAttribute('aria-label', 'Add to My Plan'); }
         }
     }
 
@@ -3264,14 +3381,36 @@ Object.assign(window, {
 
     function updatePlanMini() {
         const mini = document.getElementById('plan-mini');
-        if (!mini) return;
+        const fabBadge = document.getElementById('mobile-fab-badge');
+        const fabPlanCount = document.getElementById('mobile-fab-plan-count');
         if (myPlan.length === 0) {
-            mini.classList.remove('visible');
+            if (mini) mini.classList.remove('visible');
+            if (fabBadge) { fabBadge.textContent = '0'; fabBadge.classList.remove('visible'); }
+            if (fabPlanCount) fabPlanCount.textContent = '0';
             return;
         }
-        mini.querySelector('.plan-mini-count').textContent = myPlan.length;
-        mini.classList.toggle('visible', !planExpanded);
+        if (mini) {
+            mini.querySelector('.plan-mini-count').textContent = myPlan.length;
+            mini.classList.toggle('visible', !planExpanded);
+        }
+        if (fabBadge) { fabBadge.textContent = myPlan.length; fabBadge.classList.add('visible'); }
+        if (fabPlanCount) fabPlanCount.textContent = myPlan.length;
     }
+
+    /* Mobile FAB toggle — collapses the social icons + My Plan pill into one
+       button on small screens (see .mobile-fab CSS). Desktop keeps its
+       always-visible .social-float / .plan-mini, untouched. */
+    function toggleMobileFab(force) {
+        const fab = document.getElementById('mobile-fab');
+        const backdrop = document.getElementById('mobile-fab-backdrop');
+        const btn = document.getElementById('mobile-fab-toggle');
+        if (!fab) return;
+        const open = typeof force === 'boolean' ? force : !fab.classList.contains('open');
+        fab.classList.toggle('open', open);
+        if (backdrop) backdrop.classList.toggle('open', open);
+        if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    function closeMobileFab() { toggleMobileFab(false); }
 
     function renderPlanPanel() {
         const panel = document.getElementById('plan-panel');
@@ -3287,7 +3426,7 @@ Object.assign(window, {
         panel.innerHTML = `
             <div class="plan-panel-body">
                 <div class="plan-panel-header">
-                    <div class="plan-panel-title">🗺️ My Plan <span class="plan-count">${myPlan.length}</span></div>
+                    <div class="plan-panel-title"><svg viewBox="0 0 24 24" fill="none" stroke="var(--theme-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0;"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg> My Plan <span class="plan-count">${myPlan.length}</span></div>
                     <div class="plan-panel-sub">Temples you're planning to visit</div>
                 </div>
                 <div class="plan-panel-list">
@@ -3492,8 +3631,8 @@ Object.assign(window, {
     function renderAbout() {
         return `
             <div class="nav-bar" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;letter-spacing:0;">
-                <button class="nav-btn" onclick="goBack()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.08em;">← Back</button>
-                <button class="nav-btn" onclick="goHome()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.08em;">Home</button>
+                <button class="nav-btn" onclick="goBack()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.08em;" aria-label="Back"><span class="nav-full">← Back</span><span class="nav-compact">←</span></button>
+                <button class="nav-btn" onclick="goHome()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.08em;" aria-label="Home"><span class="nav-full">Home</span><span class="nav-compact"><svg class="nav-btn-home-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg></span></button>
             </div>
             <div class="cat-header" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;letter-spacing:0;">
                 <div class="cat-header-tag" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;letter-spacing:0;">✦ OUR STORY</div>
@@ -3557,8 +3696,8 @@ Object.assign(window, {
         pendingEnquiryMessage = null;
         return `
             <div class="nav-bar" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;letter-spacing:0;">
-                <button class="nav-btn" onclick="goBack()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.08em;">← Back</button>
-                <button class="nav-btn" onclick="goHome()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.08em;">Home</button>
+                <button class="nav-btn" onclick="goBack()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.08em;" aria-label="Back"><span class="nav-full">← Back</span><span class="nav-compact">←</span></button>
+                <button class="nav-btn" onclick="goHome()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.08em;" aria-label="Home"><span class="nav-full">Home</span><span class="nav-compact"><svg class="nav-btn-home-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg></span></button>
             </div>
             <div class="cat-header" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;letter-spacing:0;">
                 <div class="cat-header-tag" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;letter-spacing:0;">✦ REACH US</div>
@@ -3648,6 +3787,9 @@ Object.assign(window, {
         </div>`;
     }
 
+    /* Compact map-pin icon used in place of the "MAP" text nav button on mobile. */
+    const MAP_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M20.5 10c0 6-8.5 12-8.5 12s-8.5-6-8.5-12a8.5 8.5 0 0 1 17 0Z"/><circle cx="12" cy="10" r="3"/></svg>';
+
     /* ── India state tiles: approximate relative positions (% of a tall frame),
        not to map scale — used to build the state-picker before the temple list ── */
     const MAP_STATE_ALIAS = { 'Jammu and Kashmir': 'Jammu & Kashmir' };
@@ -3668,8 +3810,9 @@ Object.assign(window, {
             const clampedY = Math.min(Math.max(lp[1] - 6, 16), 670);
             const safeName = templeName.replace(/'/g, "\\'");
             const labelText = templeName.toUpperCase().replace(/&/g, '&amp;').replace(/"/g, '&quot;');
-            return `<g class="im-state-g${isActive ? ' active' : ''}" data-lx="${clampedX}" data-ly="${clampedY}" data-label="${labelText}" onmouseenter="showStateLabel(this)" onmouseleave="hideStateLabel()" ${isActive ? `onclick="handleStateSelect(this,'${safeName}')"` : ''}>
+            return `<g class="im-state-g${isActive ? ' active' : ''}" data-lx="${clampedX}" data-ly="${clampedY}" data-label="${labelText}" onmouseenter="showStateLabel(this)" onmouseleave="hideStateLabel()" ${isActive ? `onclick="handleStateSelect(this,'${safeName}')"` : `onclick="showStateLabel(this)"`}>
                 <path class="im-state" d="${d}"/>
+                <path class="im-state-hit" d="${d}"/>
             </g>`;
         }).join('');
 
@@ -3680,8 +3823,8 @@ Object.assign(window, {
 
         return `
             <div class="nav-bar" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;">
-                <button class="nav-btn" onclick="goBack()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);">← Back</button>
-                <button class="nav-btn" onclick="goHome()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);">Home</button>
+                <button class="nav-btn" onclick="goBack()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);" aria-label="Back"><span class="nav-full">← Back</span><span class="nav-compact">←</span></button>
+                <button class="nav-btn" onclick="goHome()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);" aria-label="Home"><span class="nav-full">Home</span><span class="nav-compact"><svg class="nav-btn-home-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg></span></button>
             </div>
             <div class="cat-header" style="font-size:0.9rem;color:var(--theme-ink);">
                 <div class="cat-header-tag" style="text-align: center; font-size: 15px">SACRED INDIA</div>
@@ -3707,7 +3850,7 @@ Object.assign(window, {
                     <div class="im-map-shell">
                         <div class="im-frame" id="im-frame">
                             <svg class="im-svg" viewBox="${MAP_DATA.viewBox}" preserveAspectRatio="xMidYMid meet">
-                                <path class="im-outline" d="${MAP_DATA.outline}"/>
+                                <path class="im-outline" d="${MAP_DATA.outline}" onclick="hideStateLabel()"/>
                                 ${groups}
                                 <text id="im-hover-label" class="im-state-label-live" x="0" y="0" style="opacity:0;">&#8203;</text>
                             </svg>
@@ -3768,10 +3911,10 @@ Object.assign(window, {
 
         return `
             <div class="nav-bar" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;">
-                <button class="nav-btn" onclick="goBack()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);">← Back</button>
+                <button class="nav-btn" onclick="goBack()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);" aria-label="Back"><span class="nav-full">← Back</span><span class="nav-compact">←</span></button>
                 <div style="display:flex;gap:10px;">
-                    <button class="nav-btn" onclick="goToTempleMap()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);">Back to Map</button>
-                    <button class="nav-btn" onclick="goHome()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);">Home</button>
+                    <button class="nav-btn" onclick="goToTempleMap()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);" aria-label="Back to Map"><span class="nav-full">Back to Map</span><span class="nav-compact">${MAP_ICON}</span></button>
+                    <button class="nav-btn" onclick="goHome()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);" aria-label="Home"><span class="nav-full">Home</span><span class="nav-compact"><svg class="nav-btn-home-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg></span></button>
                 </div>
             </div>
             <div class="cat-header" style="font-size:0.9rem;color:var(--theme-ink);">
@@ -3812,7 +3955,7 @@ Object.assign(window, {
         return `<div class="${cardClass}" onclick="handleTempleSelect('${t.name.replace(/'/g, "\\'")}')">
             <div class="ta-card-top">
                 <h3>${t.name}</h3>
-                <button class="ta-plan-add-btn${inPlan ? ' active' : ''}" title="${inPlan ? 'Remove from My Plan' : 'Add to My Plan'}" onclick="event.stopPropagation();handleTempleCardPlanToggle(this,'${attrSafe(t.name)}','${attrSafe(t.city)}','${attrSafe(t.state)}')">${inPlan ? '✓' : '+'}</button>
+                <button class="ta-plan-add-btn${inPlan ? ' active' : ''}" title="${inPlan ? 'Remove from My Plan' : 'Add to My Plan'}" onclick="event.stopPropagation();handleTempleCardPlanToggle(this,'${attrSafe(t.name)}','${attrSafe(t.city)}','${attrSafe(t.state)}')">${inPlan ? '−' : '+'}</button>
             </div>
             <div class="ta-loc">${t.city}, ${t.state}</div>
             <div class="ta-pills">${badge}<span class="ta-pill">${t.deity}</span>${unesco}${circuitPills}</div>
@@ -3931,18 +4074,28 @@ Object.assign(window, {
 
         return `
             <div class="nav-bar" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;">
-                <button class="nav-btn" onclick="goBack()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);">← Back</button>
+                <button class="nav-btn" onclick="goBack()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);" aria-label="Back">
+                    <span class="nav-full">← Back</span><span class="nav-compact">←</span>
+                </button>
                 <div style="display:flex;gap:10px;align-items:center;">
-                    <button id="plan-toggle-btn" class="plan-toggle-btn${isInPlan(t.name) ? ' active' : ''}" onclick="handleTogglePlan('${attrSafe(t.name)}','${attrSafe(t.city)}','${attrSafe(t.state)}')">${isInPlan(t.name) ? '✓ Added to My Plan' : '+ Add to My Plan'}</button>
-                    <button class="nav-btn" onclick="goToTempleMap()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);">Back to Map</button>
-                    <button class="nav-btn" onclick="goHome()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);">Home</button>
+                    <button id="plan-toggle-btn" class="plan-toggle-btn${isInPlan(t.name) ? ' active' : ''}" onclick="handleTogglePlan('${attrSafe(t.name)}','${attrSafe(t.city)}','${attrSafe(t.state)}')">${isInPlan(t.name) ? '− Added to My Plan' : '+ Add to My Plan'}</button>
+                    <button class="nav-btn" onclick="goToTempleMap()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);" aria-label="Back to Map">
+                        <span class="nav-full">Back to Map</span><span class="nav-compact">${MAP_ICON}</span>
+                    </button>
+                    <button class="nav-btn" onclick="goHome()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);" aria-label="Home">
+                        <span class="nav-full">Home</span>
+                        <span class="nav-compact"><svg class="nav-btn-home-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg></span>
+                    </button>
                 </div>
             </div>
             <div class="ta-hero">
                 ${rich&&rich.image?`<div class="detail-img ta-hero-img"><img src="${rich.image}" alt="${t.name}" referrerpolicy="no-referrer"></div>`:''}
                 <div class="ta-detail-header ta-hero-info">
                     <div class="detail-badge">📍 ${t.city}, ${t.state} &nbsp;·&nbsp; ${t.region} India</div>
-                    <h1 style="font-size:2.2rem;font-weight:600;color:var(--theme-ink);line-height:1.2;letter-spacing:-0.5px;margin:0.5rem 0 0 0;">${t.name}</h1>
+                    <div class="ta-title-row">
+                        <h1 style="font-size:2.2rem;font-weight:600;color:var(--theme-ink);line-height:1.2;letter-spacing:-0.5px;margin:0.5rem 0 0 0;">${t.name}</h1>
+                        <button id="plan-toggle-inline" class="plan-add-inline${isInPlan(t.name) ? ' active' : ''}" onclick="handleTogglePlan('${attrSafe(t.name)}','${attrSafe(t.city)}','${attrSafe(t.state)}')" aria-label="${isInPlan(t.name) ? 'Remove from My Plan' : 'Add to My Plan'}">${isInPlan(t.name) ? '−' : '+'}</button>
+                    </div>
                     <div class="detail-rule" style="margin-top:1rem;margin-bottom:1rem;"></div>
                     <h3 style="font-size:1.125rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.02em;margin:0 0 8px;">Sacred Circuits</h3>
                     <div>${circuitPills}</div>
@@ -4033,8 +4186,8 @@ Object.assign(window, {
 
         return `
             <div class="nav-bar" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;letter-spacing:0;">
-                <button class="nav-btn" onclick="goBack()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.08em;">← Back</button>
-                <button class="nav-btn" onclick="goHome()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.08em;">Home</button>
+                <button class="nav-btn" onclick="goBack()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.08em;" aria-label="Back"><span class="nav-full">← Back</span><span class="nav-compact">←</span></button>
+                <button class="nav-btn" onclick="goHome()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.08em;" aria-label="Home"><span class="nav-full">Home</span><span class="nav-compact"><svg class="nav-btn-home-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg></span></button>
             </div>
             <div class="cat-header" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;letter-spacing:0;">
                 <div class="cat-header-tag" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;letter-spacing:0;">🧭 INDIAN TAPESTRY SELECTION</div>
@@ -4060,8 +4213,8 @@ Object.assign(window, {
 
         return `
             <div class="nav-bar" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;letter-spacing:0;">
-                <button class="nav-btn" onclick="goBack()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.08em;">← Back</button>
-                <button class="nav-btn" onclick="goHome()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.08em;">Home</button>
+                <button class="nav-btn" onclick="goBack()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.08em;" aria-label="Back"><span class="nav-full">← Back</span><span class="nav-compact">←</span></button>
+                <button class="nav-btn" onclick="goHome()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.08em;" aria-label="Home"><span class="nav-full">Home</span><span class="nav-compact"><svg class="nav-btn-home-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg></span></button>
             </div>
             <div class="detail-grid" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;letter-spacing:0;">
                 <div class="detail-sidebar" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;letter-spacing:0;">
@@ -4529,6 +4682,33 @@ Object.assign(window, {
         <a href="https://facebook.com/enchantedoutings" target="_blank" class="social-btn sb-facebook" title="Facebook" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;letter-spacing:0;">
             <svg viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/ style="font-size:0.9rem;font-weight:400;color:var(--theme-body);line-height:1.65;letter-spacing:0;"></svg>
         </a>
+    </div>
+
+    <!-- Mobile-only collapsible FAB (see .mobile-fab CSS + toggleMobileFab()) -->
+    <div class="mobile-fab-backdrop" id="mobile-fab-backdrop" onclick="closeMobileFab()"></div>
+    <div class="mobile-fab" id="mobile-fab">
+        <div class="mobile-fab-menu" id="mobile-fab-menu">
+            <button class="mobile-fab-item" onclick="expandPlanPanel(); closeMobileFab();" aria-label="My Plan">
+                <span class="mobile-fab-item-icon mfi-plan"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg></span>
+                <span class="mobile-fab-item-count" id="mobile-fab-plan-count">0</span>
+            </button>
+            <a href="tel:+919876543210" class="mobile-fab-item" aria-label="Call Us">
+                <span class="mobile-fab-item-icon mfi-phone"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.86 19.79 19.79 0 01.07 1.18 2 2 0 012.04 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></span>
+            </a>
+            <a href="https://wa.me/919876543210" target="_blank" class="mobile-fab-item" aria-label="WhatsApp">
+                <span class="mobile-fab-item-icon mfi-whatsapp"><svg viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>
+            </a>
+            <a href="https://instagram.com/enchantedoutings" target="_blank" class="mobile-fab-item" aria-label="Instagram">
+                <span class="mobile-fab-item-icon mfi-instagram"><svg viewBox="0 0 24 24" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></span>
+            </a>
+            <a href="https://facebook.com/enchantedoutings" target="_blank" class="mobile-fab-item" aria-label="Facebook">
+                <span class="mobile-fab-item-icon mfi-facebook"><svg viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></span>
+            </a>
+        </div>
+        <button class="mobile-fab-toggle" id="mobile-fab-toggle" onclick="toggleMobileFab()" aria-label="Open quick actions" aria-expanded="false">
+            <span class="mobile-fab-badge" id="mobile-fab-badge">0</span>
+            <span class="mobile-fab-toggle-icon">+</span>
+        </button>
     </div>
 </body>
 </html>
