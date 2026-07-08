@@ -2668,9 +2668,14 @@ Object.assign(window, {
            each state purely to enlarge the tap target (small states are far under
            the ~44px touch minimum on a 390px screen). The visible .im-state border
            above is untouched. */
-        .im-state-hit { fill: transparent; stroke: transparent; stroke-width: 16px; vector-effect: non-scaling-stroke; pointer-events: all; }
+        /* Kept modest (viewBox units, not screen-constant) so the enlarged hit
+           zones of adjacent, tightly-packed states don't bridge into each other —
+           an earlier, much larger constant-pixel version caused the hover target
+           to flicker between neighboring states as the cursor moved, which read
+           as the whole map "jumping." */
+        .im-state-hit { fill: transparent; stroke: transparent; stroke-width: 7; pointer-events: all; }
         .im-state-g.active .im-state { cursor:pointer; }
-        .im-state-g:hover .im-state { fill:rgba(193,122,74,0.28); stroke:var(--theme-accent); stroke-width:1.2; }
+        .im-state-g.active:hover .im-state { fill:rgba(193,122,74,0.28); stroke:var(--theme-accent); stroke-width:1.2; }
         .im-state-label-live { font-family:'Inter',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.3px; fill:var(--theme-accent); text-anchor:middle; pointer-events:none; transition:opacity 0.15s ease; paint-order:stroke; stroke:#fff; stroke-width:3px; stroke-linejoin:round; }
         .im-state-g.selected .im-state { fill:var(--theme-accent); stroke:var(--theme-ink); stroke-width:1.2; }
         .im-frame.zooming .im-state-g:not(.selected) { opacity:0; transition:opacity 0.4s ease; }
