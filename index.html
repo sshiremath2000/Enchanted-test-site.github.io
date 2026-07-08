@@ -3688,8 +3688,37 @@ Object.assign(window, {
     }
 
     /* ── RENDER: CONTACT ─────────────────────────────────────── */
+    function renderAgeFields(containerId, count, labelPrefix, minAge, maxAge) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const n = parseInt(count) || 0;
+        const fieldStyle = "padding:0.4rem 0.3rem;border:1px solid rgba(193,122,74,0.3);border-radius:6px;background:rgba(234,213,193,0.3);color:var(--theme-ink);font-size:0.75rem;outline:none;font-family:inherit;width:100%;min-width:0;";
+        const ageOptions = Array.from({length: maxAge - minAge + 1}, (_, i) => minAge + i)
+            .map(a => `<option value="${a}">${a} yrs</option>`).join('');
+        let html = '';
+        for (let i = 1; i <= n; i++) {
+            html += `<select style="${fieldStyle}"><option value="">Age</option>${ageOptions}</select>`;
+        }
+        container.innerHTML = html;
+    }
+    function renderKidsAgeFields(count) {
+        renderAgeFields('kids-ages-container', count, 'K', 0, 17);
+    }
+    function renderSeniorAgeFields(count) {
+        renderAgeFields('seniors-ages-container', count, 'S', 60, 100);
+    }
+
     function handleSendContactMessage() {
         alert('Thank you! We will get back to you soon.');
+        const form = document.getElementById('contact-form');
+        if (form) {
+            form.querySelectorAll('input, textarea').forEach(el => el.value = '');
+            form.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+        }
+        const kidsAges = document.getElementById('kids-ages-container');
+        if (kidsAges) kidsAges.innerHTML = '';
+        const seniorsAges = document.getElementById('seniors-ages-container');
+        if (seniorsAges) seniorsAges.innerHTML = '';
         myPlan = [];
         pendingEnquiryMessage = null;
         planExpanded = false;
@@ -3700,6 +3729,7 @@ Object.assign(window, {
     function renderContact() {
         const msg = pendingEnquiryMessage;
         pendingEnquiryMessage = null;
+        const fieldStyle = "padding:0.75rem 1rem;border:1px solid rgba(193,122,74,0.3);border-radius:8px;background:rgba(234,213,193,0.3);color:var(--theme-ink);font-size:0.9rem;outline:none;font-family:inherit";
         return `
             <div class="nav-bar" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;letter-spacing:0;">
                 <button class="nav-btn" onclick="goBack()" style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.08em;" aria-label="Back"><span class="nav-full">← Back</span><span class="nav-compact">←</span></button>
@@ -3738,11 +3768,72 @@ Object.assign(window, {
                     <div class="detail-section" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;letter-spacing:0;">
                         <h3 style="font-size:1.125rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.02em;">Send Us a Message</h3>
                         <p style="font-size: 15px; font-weight: 400; color: var(--theme-body); line-height: 1.65; letter-spacing: 0; margin-bottom: 1.25rem">Tell us where you'd like to go, and we'll craft an itinerary tailored to your curiosity and pace.</p>
-                        <div style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;letter-spacing:0;display:flex;flex-direction:column;gap:0.85rem">
+                        <div id="contact-form" style="font-size:0.9rem;font-weight:400;color:var(--theme-ink);line-height:1.6;letter-spacing:0;display:flex;flex-direction:column;gap:0.85rem">
                             <input type="text" placeholder="Your Name" style="padding:0.75rem 1rem;border:1px solid rgba(193,122,74,0.3);border-radius:8px;background:rgba(234,213,193,0.3);color:var(--theme-ink);font-size:0.9rem;outline:none;font-family:inherit">
                             <input type="email" placeholder="Email Address" style="padding:0.75rem 1rem;border:1px solid rgba(193,122,74,0.3);border-radius:8px;background:rgba(234,213,193,0.3);color:var(--theme-ink);font-size:0.9rem;outline:none;font-family:inherit">
-                            <input type="tel" placeholder="Mobile Number" style="padding:0.75rem 1rem;border:1px solid rgba(193,122,74,0.3);border-radius:8px;background:rgba(234,213,193,0.3);color:var(--theme-ink);font-size:0.9rem;outline:none;font-family:inherit">
-                            <textarea id="contact-message" placeholder="Where would you like to go? Tell us about your dream journey..." rows="4" style="padding:0.75rem 1rem;border:1px solid rgba(193,122,74,0.3);border-radius:8px;background:rgba(234,213,193,0.3);color:var(--theme-ink);font-size:0.9rem;outline:none;font-family:inherit;resize:vertical">${msg || ''}</textarea>
+                            <input type="tel" placeholder="Mobile Number" style="${fieldStyle}">
+                            <div style="font-size:11px;font-weight:600;color:var(--theme-body);letter-spacing:0.08em;text-transform:uppercase;margin-top:0.4rem;">Trip Details (optional)</div>
+                            <div style="display:flex;align-items:center;gap:0.75rem;">
+                                <label style="font-size:0.85rem;flex:0 0 150px;">No. of Days</label>
+                                <input type="text" style="${fieldStyle};flex:1;">
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.75rem;">
+                                <label style="font-size:0.85rem;flex:0 0 150px;">Budget</label>
+                                <select style="${fieldStyle};flex:0 0 90px;">
+                                    <option value="INR" selected>₹ Rs</option>
+                                    <option value="USD">$ USD</option>
+                                    <option value="EUR">€ EUR</option>
+                                </select>
+                                <input type="text" style="${fieldStyle};flex:1;">
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.75rem;">
+                                <label style="font-size:0.85rem;flex:0 0 150px;">Type of Hotels</label>
+                                <select style="${fieldStyle};flex:1;">
+                                    <option value="">Select</option>
+                                    <option value="3star">★★★ (3 Stars)</option>
+                                    <option value="4star">★★★★ (4 Stars)</option>
+                                    <option value="5starplus">★★★★★+ (5 Stars &amp; Above)</option>
+                                </select>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.75rem;">
+                                <label style="font-size:0.85rem;flex:0 0 150px;">No. of Travellers</label>
+                                <input type="text" style="${fieldStyle};flex:1;">
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.75rem;">
+                                <label style="font-size:0.85rem;flex:0 0 150px;">No. of Kids</label>
+                                <select id="kids-count" onchange="renderKidsAgeFields(this.value)" style="${fieldStyle};flex:1;">
+                                    <option value="0">Select</option>
+                                    ${Array.from({length:6},(_,i)=>i+1).map(n=>`<option value="${n}">${n}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div id="kids-ages-container" style="display:grid;grid-template-columns:repeat(6,1fr);gap:0.4rem;"></div>
+                            <div style="display:flex;align-items:center;gap:0.75rem;">
+                                <label style="font-size:0.85rem;flex:0 0 150px;">No. of Senior Citizens</label>
+                                <select id="seniors-count" onchange="renderSeniorAgeFields(this.value)" style="${fieldStyle};flex:1;">
+                                    <option value="0">Select</option>
+                                    ${Array.from({length:6},(_,i)=>i+1).map(n=>`<option value="${n}">${n}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div id="seniors-ages-container" style="display:grid;grid-template-columns:repeat(6,1fr);gap:0.4rem;"></div>
+                            <div style="display:flex;align-items:center;gap:0.75rem;">
+                                <label style="font-size:0.85rem;flex:0 0 150px;">Meal Preference</label>
+                                <select style="${fieldStyle};flex:1;">
+                                    <option value="">Select</option>
+                                    <option value="veg">Vegetarian</option>
+                                    <option value="nonveg">Non-Vegetarian</option>
+                                    <option value="jain">Jain</option>
+                                </select>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.75rem;">
+                                <label style="font-size:0.85rem;flex:0 0 150px;">Group</label>
+                                <select style="${fieldStyle};flex:1;">
+                                    <option value="">Select</option>
+                                    <option value="group">I'd like to join a group</option>
+                                    <option value="own">I have my own group</option>
+                                </select>
+                            </div>
+                            <textarea placeholder="Special Requests" rows="3" style="${fieldStyle};resize:vertical"></textarea>
+                            <textarea id="contact-message" placeholder="Where would you like to go? Tell us about your dream journey..." rows="4" style="${fieldStyle};resize:vertical">${msg || ''}</textarea>
                             <button style="font-size:0.8rem;font-weight:600;color:var(--theme-ink);line-height:1.4;letter-spacing:0.08em;padding:0.85rem 2rem;background:var(--theme-accent);color:white;border:none;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;letter-spacing:0.05em;align-self:flex-start" onclick="handleSendContactMessage()">Send Message →</button>
                         </div>
                     </div>
